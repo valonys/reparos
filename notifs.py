@@ -17,6 +17,8 @@ selected_fpso = st.sidebar.selectbox("Select FPSO for Layout", ['GIR', 'DAL', 'P
 NI_keywords = ['WRAP', 'WELD', 'TBR', 'PACH', 'PATCH', 'OTHE', 'CLMP', 'REPL', 
                'BOND', 'BOLT', 'SUPP', 'OT', 'GASK', 'CLAMP']
 NC_keywords = ['COA', 'ICOA', 'CUSP', 'WELD', 'REPL', 'CUSP1', 'CUSP2']
+
+
 # Define all location keywords based on module_layout.txt (for CLV initially)
 clv_module_keywords = ['M110', 'M111', 'M112', 'M113', 'M114', 'M115', 'M116', 'H151',
                    'M120', 'M121', 'M122', 'M123', 'M124', 'M125', 'M126', 'M151']
@@ -33,6 +35,14 @@ paz_living_quarters_keywords = ['LQ', 'LQ1', 'LQ2', 'LQ3', 'LQ4', 'LQL0', 'LQPS'
 paz_flare_keywords = ['FLARE']
 paz_fwd_keywords = ['FWD']
 paz_hexagons_keywords = ['HELIDECK']
+
+# DAL-specific keywords
+dal_module_keywords = ['P11', 'P21', 'P31', 'P41', 'P51', 'P61', 'P12', 'P22', 'P32', 'P42', 'P52', 'P62']
+dal_rack_keywords = ['R11', 'R12', 'R13', 'R14', 'R15', 'R16']
+dal_living_quarters_keywords = ['LQ', 'LQ1', 'LQ2', 'LQ3', 'LQ4', 'LQL0', 'LQPS', 'LQSB', 'LQROOF', 'LQL4', 'LQL2', 'LQ-5', 'LQPD', 'LQ PS', 'LQAFT', 'LQ-T', 'LQL1S']
+dal_flare_keywords = ['FLARE']
+dal_fwd_keywords = ['FWD']
+dal_hexagons_keywords = ['HELIDECK']
 
 # Mapping for keyword grouping (including COA variations)
 NI_keyword_map = {
@@ -73,12 +83,29 @@ paz_racks = {
     'R4': (1.5, 6), 'R5': (1.5, 7), 'R6': (1.5, 8),
     'R7': (1.5, 9), 'R8': (1.5, 10)
 }
-paz_flare = {'FL': (0.5, 11)}
+paz_flare = {'FLARE': (0.5, 11)}
 
 paz_living_quarters = {'LQ': (0.5, 1)}
 
 paz_hexagons = {'HELIDECK': (2.75, 1)}
 paz_fwd = {'FWD': (0.5, 11.75)}
+
+# Define DAL location dictionaries as global variables
+dal_modules = {
+    'P11': (0.75, 2), 'P21': (0.5, 3), 'P31': (0.5, 4), 'P41': (0.5, 5),
+    'P51': (0.5, 6), 'P61': (0.5, 7), 'P12': (1.75, 2), 'P22': (2, 3),
+    'P32': (2, 4), 'P42': (2, 5), 'P52': (2, 6), 'P62': (2, 7)
+}
+dal_racks = {
+    'R11': (1.5, 3), 'R12': (1.5, 4), 'R13': (1.5, 5),
+    'R14': (1.5, 6), 'R15': (1.5, 7), 'R16': (1.5, 8)
+}
+dal_flare = {'FLARE': (1.5, 9)}
+
+dal_living_quarters = {'LQ': (0.5, 1)}
+
+dal_hexagons = {'HELIDECK': (2.75, 1)}
+dal_fwd = {'FWD': (0.5, 10)}
 
 
 
@@ -105,6 +132,16 @@ def preprocess_keywords(description):
     
     # Handle PAZ rack keywords
     for rack in paz_rack_keywords:
+        if rack in description:
+            description = description.replace(rack, rack)
+    
+    # Handle DAL module keywords
+    for module in dal_module_keywords:
+        if module in description:
+            description = description.replace(module, module)
+    
+    # Handle DAL rack keywords
+    for rack in dal_rack_keywords:
         if rack in description:
             description = description.replace(rack, rack)
     
@@ -272,7 +309,34 @@ def draw_paz(ax):
         add_fwd(ax, (col, row), 2.5, -1, edgecolor='black', facecolor='white')
 
 def draw_dal(ax):
-    ax.text(6, 1.75, "DAL Layout\n(Implementation work in progress...)", ha='center', va='center', fontsize=16, weight='bold')
+    for module, (row, col) in dal_modules.items():
+        if module == 'P11':
+            height, y_position, text_y = 1.25, row, row + 0.5
+        elif module == 'P12':
+            height, y_position, text_y = 1.25, row - 0.25, row + 0.25
+        else:
+            height, y_position, text_y = 1, row, row + 0.5
+        add_chamfered_rectangle(ax, (col, y_position), 1, height, 0.1, edgecolor='black', facecolor='white')
+        ax.text(col + 0.5, text_y, module, ha='center', va='center', fontsize=7, weight='bold')
+
+    for rack, (row, col) in dal_racks.items():
+        add_chamfered_rectangle(ax, (col, row), 1, 0.5, 0.05, edgecolor='black', facecolor='white')
+        ax.text(col + 0.5, row + 0.25, rack, ha='center', va='center', fontsize=7, weight='bold')
+
+    for flare_loc, (row, col) in dal_flare.items():
+        add_chamfered_rectangle(ax, (col, row), 1, 0.5, 0.05, edgecolor='black', facecolor='white')
+        ax.text(col + 0.5, row + 0.25, flare_loc, ha='center', va='center', fontsize=7, weight='bold') 
+
+    for living_quarter, (row, col) in dal_living_quarters.items():
+        add_rectangle(ax, (col, row), 1, 2.5, edgecolor='black', facecolor='white')
+        ax.text(col + 0.5, row + 1.25, living_quarter, ha='center', va='center', fontsize=7, rotation=90, weight='bold')
+
+    for hexagon, (row, col) in dal_hexagons.items():
+        add_hexagon(ax, (col, row), 0.60, edgecolor='black', facecolor='white')
+        ax.text(col, row, hexagon, ha='center', va='center', fontsize=7, weight='bold')
+
+    for fwd_loc, (row, col) in dal_fwd.items():
+        add_fwd(ax, (col, row), 2.5, -1, edgecolor='black', facecolor='white')
 
 def draw_gir(ax):
     ax.text(6, 1.75, "GIR Layout\n(Implementation work in progress...)", ha='center', va='center', fontsize=16, weight='bold')
@@ -353,6 +417,14 @@ if uploaded_file is not None:
         df['Extracted_PAZ_Flare'] = df.apply(extract_location_keywords, axis=1, args=('Description', paz_flare_keywords))
         df['Extracted_PAZ_FWD'] = df.apply(extract_location_keywords, axis=1, args=('Description', paz_fwd_keywords))
         df['Extracted_PAZ_HeliDeck'] = df.apply(extract_location_keywords, axis=1, args=('Description', paz_hexagons_keywords))
+        
+        # Extract DAL-specific location keywords
+        df['Extracted_DAL_Modules'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_module_keywords))
+        df['Extracted_DAL_Racks'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_rack_keywords))
+        df['Extracted_DAL_LivingQuarters'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_living_quarters_keywords))
+        df['Extracted_DAL_Flare'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_flare_keywords))
+        df['Extracted_DAL_FWD'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_fwd_keywords))
+        df['Extracted_DAL_HeliDeck'] = df.apply(extract_location_keywords, axis=1, args=('Description', dal_hexagons_keywords))
         
         # Split dataframe into NI and NC
         df_ni = df[df['Notifictn type'] == 'NI'].copy()
@@ -464,7 +536,7 @@ if uploaded_file is not None:
         with tab4:
             st.subheader("FPSO Layout Visualization")
             notification_type = st.radio("Select Notification Type", ['NI', 'NC'])
-            # Count NI or NC notifications for each location type for the selected FPSO (CLV only)
+            # Count NI or NC notifications for each location type for the selected FPSO (CLV, PAZ, DAL)
             df_selected = df[df['FPSO'] == selected_fpso].copy()
             if notification_type == 'NI':
                 df_selected = df_selected[df_selected['Notifictn type'] == 'NI']
@@ -489,6 +561,16 @@ if uploaded_file is not None:
                 'Flare': pd.DataFrame(index=paz_flare_keywords, columns=['Count']).fillna(0),
                 'FWD': pd.DataFrame(index=paz_fwd_keywords, columns=['Count']).fillna(0),
                 'HeliDeck': pd.DataFrame(index=paz_hexagons_keywords, columns=['Count']).fillna(0)
+            }
+            
+            # Initialize DAL-specific location counts
+            dal_location_counts = {
+                'DAL_Modules': pd.DataFrame(index=dal_module_keywords, columns=['Count']).fillna(0),
+                'DAL_Racks': pd.DataFrame(index=dal_rack_keywords, columns=['Count']).fillna(0),
+                'LivingQuarters': pd.DataFrame(index=dal_living_quarters_keywords, columns=['Count']).fillna(0),
+                'Flare': pd.DataFrame(index=dal_flare_keywords, columns=['Count']).fillna(0),
+                'FWD': pd.DataFrame(index=dal_fwd_keywords, columns=['Count']).fillna(0),
+                'HeliDeck': pd.DataFrame(index=dal_hexagons_keywords, columns=['Count']).fillna(0)
             }
             
             # Count notifications for each location type and placement 
@@ -523,6 +605,26 @@ if uploaded_file is not None:
                     else:
                         count = df_selected[f'Extracted_{location_type}'].str.contains(keyword, na=False).sum()
                         paz_location_counts[location_type].loc[keyword, 'Count'] = count
+
+            # Count DAL-specific notifications
+            for location_type, keywords in [
+                ('DAL_Modules', dal_module_keywords),
+                ('DAL_Racks', dal_rack_keywords),
+                ('LivingQuarters', dal_living_quarters_keywords),
+                ('Flare', dal_flare_keywords),
+                ('FWD', dal_fwd_keywords),
+                ('HeliDeck', dal_hexagons_keywords)
+            ]:
+                for keyword in keywords:
+                    if location_type == 'DAL_Modules':
+                        count = df_selected['Extracted_DAL_Modules'].str.contains(keyword, na=False).sum()
+                        dal_location_counts[location_type].loc[keyword, 'Count'] = count
+                    elif location_type == 'DAL_Racks':
+                        count = df_selected['Extracted_DAL_Racks'].str.contains(keyword, na=False).sum()
+                        dal_location_counts[location_type].loc[keyword, 'Count'] = count
+                    else:
+                        count = df_selected[f'Extracted_{location_type}'].str.contains(keyword, na=False).sum()
+                        dal_location_counts[location_type].loc[keyword, 'Count'] = count
 
             # Calculate total LQ count by summing all LQ-related keywords
             total_lq_count = sum(
@@ -641,6 +743,64 @@ if uploaded_file is not None:
                 for hexagon, (row, col) in paz_hexagons.items():
                     if hexagon in paz_hexagons_keywords:
                         count = int(paz_location_counts['HeliDeck'].loc[hexagon, 'Count'])
+                        if count > 0:
+                            # Position count slightly above and to the right of the heli-deck text
+                            ax.text(col + 0.2, row + 0.2, f"{count}", 
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # Total counts at the bottom
+                total_ni = df_selected[df_selected['Notifictn type'] == 'NI'].shape[0]
+                total_nc = df_selected[df_selected['Notifictn type'] == 'NC'].shape[0]
+                ax.text(6, 0.25, f"NI: {total_ni}\nNC: {total_nc}", ha='center', va='center', fontsize=8, weight='bold', color='red')
+            
+            elif selected_fpso == 'DAL':
+                # DAL Modules
+                for module, (row, col) in dal_modules.items():
+                    if module in dal_module_keywords:
+                        count = int(dal_location_counts['DAL_Modules'].loc[module, 'Count'])
+                        if count > 0:
+                            # Position count slightly above and to the right of the module text
+                            ax.text(col + 0.8, row + 0.8, f"{count}", 
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # DAL Racks
+                for rack, (row, col) in dal_racks.items():
+                    if rack in dal_rack_keywords:
+                        count = int(dal_location_counts['DAL_Racks'].loc[rack, 'Count'])
+                        if count > 0:
+                            # Position count slightly above and to the right of the rack text
+                            ax.text(col + 0.7, row + 0.4, f"{count}", 
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # Living Quarters (with total count)
+                for lq, (row, col) in dal_living_quarters.items():
+                    if total_lq_count > 0:
+                        # Position count slightly above and to the right of the LQ text
+                        ax.text(col + 0.7, row + 1.4, f"{total_lq_count}", 
+                                ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # Flare
+                for flare_loc, (row, col) in dal_flare.items():
+                    if flare_loc in dal_flare_keywords:
+                        count = int(dal_location_counts['Flare'].loc[flare_loc, 'Count'])
+                        if count > 0:
+                            # Position count slightly above and to the right of the flare text
+                            ax.text(col + 0.7, row + 0.4, f"{count}", 
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # FWD
+                for fwd_loc, (row, col) in dal_fwd.items():
+                    if fwd_loc in dal_fwd_keywords:
+                        count = int(dal_location_counts['FWD'].loc[fwd_loc, 'Count'])
+                        if count > 0:
+                            # Position count slightly above and to the left of the FWD text (adjusted for rotation)
+                            ax.text(col + 0.75, row + 1.4, f"{count}", 
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
+                
+                # Heli-deck
+                for hexagon, (row, col) in dal_hexagons.items():
+                    if hexagon in dal_hexagons_keywords:
+                        count = int(dal_location_counts['HeliDeck'].loc[hexagon, 'Count'])
                         if count > 0:
                             # Position count slightly above and to the right of the heli-deck text
                             ax.text(col + 0.2, row + 0.2, f"{count}", 
