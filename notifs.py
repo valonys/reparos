@@ -313,7 +313,7 @@ def draw_dal(ax):
         if module == 'P11':
             height, y_position, text_y = 1, row, row + 0.5
         elif module == 'P12':
-            height, y_position, text_y = 1, row - 0.25, row + 0.25
+            height, y_position, text_y = 1.25, row - 0.25, row + 0.25
         else:
             height, y_position, text_y = 1, row, row + 0.5
         add_chamfered_rectangle(ax, (col, y_position), 1, height, 0.1, edgecolor='black', facecolor='white')
