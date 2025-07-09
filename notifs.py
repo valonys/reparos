@@ -311,7 +311,7 @@ def draw_paz(ax):
 def draw_dal(ax):
     for module, (row, col) in dal_modules.items():
         if module == 'P11':
-            height, y_position, text_y = 1.25, row, row + 0.5
+            height, y_position, text_y = 1, row, row + 0.5
         elif module == 'P12':
             height, y_position, text_y = 1.25, row - 0.25, row + 0.25
         else:
