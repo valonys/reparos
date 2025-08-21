@@ -14,13 +14,13 @@ dal_modules = {
     'P32': (2, 4), 'P42': (2, 5), 'P52': (2, 6), 'P62': (2, 7)
 }
 dal_racks = {
-    'R11': (1.5, 3), 'R12': (1.5, 4), 'R13': (1.5, 5),
-    'R14': (1.5, 6), 'R15': (1.5, 7), 'R16': (1.5, 8)
+    'R11': (1.5, 2), 'R12': (1.5, 3), 'R13': (1.5, 4),
+    'R14': (1.5, 5), 'R15': (1.5, 6), 'R16': (1.5, 7)
 }
-dal_flare = {'FLARE': (1.5, 9)}
+dal_flare = {'FLARE': (0.5, 8)}
 dal_living_quarters = {'LQ': (0.5, 1)}
 dal_hexagons = {'HELIDECK': (2.75, 1)}
-dal_fwd = {'FWD': (0.5, 10)}
+dal_fwd = {'FWD': (0.5, 8.75)}
 
 def draw_dal(ax, add_chamfered_rectangle, add_rectangle, add_hexagon, add_fwd):
     for module, (row, col) in dal_modules.items():
@@ -38,9 +38,10 @@ def draw_dal(ax, add_chamfered_rectangle, add_rectangle, add_hexagon, add_fwd):
         ax.text(col + 0.5, row + 0.25, rack, ha='center', va='center', fontsize=7, weight='bold')
 
     for flare_loc, (row, col) in dal_flare.items():
-        add_chamfered_rectangle(ax, (col, row), 1, 0.5, 0.05, edgecolor='black', facecolor='white')
-        ax.text(col + 0.5, row + 0.25, flare_loc, ha='center', va='center', fontsize=7, weight='bold') 
+        add_chamfered_rectangle(ax, (col, row), 0.75, 2.5, 0.05, edgecolor='black', facecolor='white')
+        ax.text(col + 0.35, row + 1.25, flare_loc, ha='center', va='center', fontsize=7, weight='bold') 
 
+        
     for living_quarter, (row, col) in dal_living_quarters.items():
         add_rectangle(ax, (col, row), 1, 2.5, edgecolor='black', facecolor='white')
         ax.text(col + 0.5, row + 1.25, living_quarter, ha='center', va='center', fontsize=7, rotation=90, weight='bold')
@@ -51,3 +52,9 @@ def draw_dal(ax, add_chamfered_rectangle, add_rectangle, add_hexagon, add_fwd):
 
     for fwd_loc, (row, col) in dal_fwd.items():
         add_fwd(ax, (col, row), 2.5, -1, edgecolor='black', facecolor='white') 
+
+
+    #  
+    #add_chamfered_rectangle(ax, (col, row), 1, 0.5, 0.05, edgecolor='black', facecolor='white')
+    #ax.text(col + 0.5, row + 0.25, flare_loc, ha='center', va='center', fontsize=7, weight='bold') 
+

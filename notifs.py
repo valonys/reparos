@@ -16,6 +16,97 @@ from gir import *
 # Remove these imports:
 # from utils import preprocess_keywords, extract_ni_nc_keywords, extract_location_keywords
 
+# --- UI CONFIG & STYLE ---
+st.set_page_config(page_title="B17 - Notifications", layout="wide")
+
+st.markdown("""
+    <style>
+    @import url('https://fonts.cdnfonts.com/css/tw-cen-mt');
+    * {
+        font-family: 'Tw Cen MT', sans-serif !important;
+    }
+
+    /* Sidebar arrow fix */
+    section[data-testid="stSidebar"] [data-testid="stSidebarNav"]::before {
+        content: "▶";
+        font-size: 1.3rem;
+        margin-right: 0.4rem;
+    }
+
+    /* Top-right logo placement - responsive to scrolling */
+    .logo-container {
+        position: absolute;
+        top: 1rem;
+        right: 2rem;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    
+    /* Adjust logo position when scrolling */
+    .logo-container.scrolled {
+        position: fixed;
+        top: 0.5rem;
+        right: 1rem;
+        transform: scale(0.8);
+    }
+    
+    /* Ensure main content doesn't overlap with logo */
+    .main .block-container {
+        padding-top: 2rem !important;
+    }
+    
+    /* Smooth transitions for logo */
+    .logo-container img {
+        transition: all 0.3s ease;
+    }
+    
+    /* Logo hover effect */
+    .logo-container:hover {
+        transform: scale(1.05);
+    }
+    
+    .logo-container.scrolled:hover {
+        transform: scale(0.85);
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# Display logo (responsive to scrolling)
+st.markdown(
+    """
+    <div class="logo-container" id="logo-container">
+        <img src="https://github.com/valonys/DigiTwin/blob/29dd50da95bec35a5abdca4bdda1967f0e5efff6/ValonyLabs_Logo.png?raw=true" width="70">
+    </div>
+    
+    <script>
+    // Handle logo positioning on scroll
+    window.addEventListener('scroll', function() {
+        const logo = document.getElementById('logo-container');
+        if (window.scrollY > 100) {
+            logo.classList.add('scrolled');
+        } else {
+            logo.classList.remove('scrolled');
+        }
+    });
+    
+    // Initial check for scroll position
+    document.addEventListener('DOMContentLoaded', function() {
+        const logo = document.getElementById('logo-container');
+        if (window.scrollY > 100) {
+            logo.classList.add('scrolled');
+        }
+    });
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
+st.title("📊 DigiTwin - The Inspekta Deck")
+
+# --- AVATARS ---
+USER_AVATAR = "https://raw.githubusercontent.com/achilela/vila_fofoka_analysis/9904d9a0d445ab0488cf7395cb863cce7621d897/USER_AVATAR.png"
+BOT_AVATAR = "https://raw.githubusercontent.com/achilela/vila_fofoka_analysis/991f4c6e4e1dc7a8e24876ca5aae5228bcdb4dba/Ataliba_Avatar.jpg"
+
 # --- FAST LOCAL PREPROCESSING FUNCTIONS ---
 def preprocess_keywords(description):
     description = str(description).upper()
@@ -119,10 +210,16 @@ def add_fwd(ax, xy, width, height, **kwargs):
 
 # Sidebar file upload and FPSO selection
 st.sidebar.title("Upload Notifications Dataset")
+
+# Add database loading option
+load_from_db = st.sidebar.checkbox("Load from Database", help="Load previously uploaded data from database")
+
 uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type=["xlsx"])
 
 # Add FPSO selection dropdown in the sidebar
 selected_fpso = st.sidebar.selectbox("Select FPSO for Layout", ['GIR', 'DAL', 'PAZ', 'CLV'])
+
+
 
 # NI/NC keywords (if not already in utils.py, move them there)
 NI_keywords = ['WRAP', 'WELD', 'TBR', 'PACH', 'PATCH', 'OTHE', 'CLMP', 'REPL', 
@@ -136,6 +233,11 @@ TABLE_NAME = 'notifications'
 def save_df_to_db(df, db_path=DB_PATH, table_name=TABLE_NAME):
     with sqlite3.connect(db_path) as conn:
         df.to_sql(table_name, conn, if_exists='replace', index=False)
+        # Save timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn.execute("CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT)")
+        conn.execute("INSERT OR REPLACE INTO metadata VALUES (?, ?)", ('last_updated', timestamp))
 
 # Utility to load DataFrame from SQLite
 def load_df_from_db(db_path=DB_PATH, table_name=TABLE_NAME):
@@ -145,25 +247,71 @@ def load_df_from_db(db_path=DB_PATH, table_name=TABLE_NAME):
         except Exception:
             return None
 
-# Set Tw Cen MT font for the entire app
-st.markdown(
-    '''<style>
-    html, body, [class*="css"], .stApp, .stMarkdown, .stDataFrame, .stTable, .stTextInput, .stSelectbox, .stButton, .stRadio, .stSubheader, .stHeader, .stTitle, .stTabs, .stTab, .stSidebar, .stInfo, .stAlert, .stDataFrame th, .stDataFrame td {
-        font-family: "Tw Cen MT", "Arial", sans-serif !important;
-    }
-    </style>''',
-    unsafe_allow_html=True
-)
+# Utility to get last update timestamp
+def get_last_update_time(db_path=DB_PATH):
+    with sqlite3.connect(db_path) as conn:
+        try:
+            result = conn.execute("SELECT value FROM metadata WHERE key = 'last_updated'").fetchone()
+            return result[0] if result else None
+        except Exception:
+            return None
+
+# Data Management Section
+st.sidebar.markdown("---")
+st.sidebar.subheader("Data Management")
+
+# Check if data exists in database
+existing_data = load_df_from_db()
+if existing_data is not None:
+    st.sidebar.info(f"📊 Database contains {len(existing_data)} records")
+    
+    # Show last update time
+    last_update = get_last_update_time()
+    if last_update:
+        st.sidebar.caption(f"🕒 Last updated: {last_update}")
+    
+    # Show data summary
+    with st.sidebar.expander("📋 Data Summary"):
+        if 'FPSO' in existing_data.columns:
+            fpsos = existing_data['FPSO'].value_counts()
+            st.write("**FPSO Distribution:**")
+            for fpso, count in fpsos.items():
+                st.write(f"• {fpso}: {count}")
+        
+        if 'Notifictn type' in existing_data.columns:
+            notif_types = existing_data['Notifictn type'].value_counts()
+            st.write("**Notification Types:**")
+            for ntype, count in notif_types.items():
+                st.write(f"• {ntype}: {count}")
+    
+    # Add clear database option
+    if st.sidebar.button("🗑️ Clear Database"):
+        import os
+        if os.path.exists(DB_PATH):
+            os.remove(DB_PATH)
+            st.sidebar.success("Database cleared successfully!")
+            st.rerun()
+else:
+    st.sidebar.warning("No data in database")
+
+
 
 # Main app logic
-if uploaded_file is not None:
+if uploaded_file is not None or load_from_db:
     try:
-        # Read the Excel file
-        df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
-        # Save to DB for persistence
-        save_df_to_db(df)
-        # Remove unnecessary DataFrame cast, as pd.read_excel always returns a DataFrame
-        # If df is ever converted to a numpy array, ensure to convert it back to DataFrame before using .isin() or .apply()
+        if load_from_db:
+            df = load_df_from_db()
+            if df is None:
+                st.warning("No data found in the database. Please upload a new file or ensure it's saved.")
+                st.stop()
+            else:
+                st.success("📊 Data loaded from database successfully!")
+        else:
+            # Read the Excel file
+            df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
+            # Save to DB for persistence
+            save_df_to_db(df)
+            st.success("✅ New data uploaded and saved to database!")
         
         # Strip whitespace from column names
         df.columns = df.columns.str.strip()
@@ -428,7 +576,7 @@ if uploaded_file is not None:
                         if count > 0:
                             # Position count slightly above and to the right of the rack text
                             ax.text(col + 0.7, row + 0.4, f"{count}", 
-                                    ha='center', va='center', fontsize=6, weight='bold', color='red') # This same location should be applied to the rack modules
+                                    ha='center', va='center', fontsize=6, weight='bold', color='red')
                 
                 # Living Quarters (with total count)
                 for lq, (row, col) in clv_living_quarters.items():
@@ -595,4 +743,19 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
-    st.write('Please upload an Excel file to proceed.') 
+    st.write('Please upload an Excel file to proceed.')
+
+# Add footer with rocket emojis and branding
+st.markdown("---")
+st.markdown(
+    """
+    <div style="text-align: center; padding: 20px; border-radius: 10px; margin-top: 30px;">
+        <p style="font-size: 14px; color: #6c757d; margin: 0;">
+            🚀 Built with Pride - STP/INSP/MET | Powered by <a href="https://www.valonylabs.com" target="_blank" style="color: #007bff; text-decoration: none; font-weight: bold;">ValonyLabs</a> 🚀
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+) 
+
+
