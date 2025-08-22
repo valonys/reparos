@@ -307,10 +307,10 @@ if uploaded_file is not None or load_from_db:
             else:
                 st.success("📊 Data loaded from database successfully!")
         else:
-            # Read the Excel file
-            df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
-            # Save to DB for persistence
-            save_df_to_db(df)
+        # Read the Excel file
+        df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
+        # Save to DB for persistence
+        save_df_to_db(df)
             st.success("✅ New data uploaded and saved to database!")
         
         # Strip whitespace from column names
@@ -751,7 +751,7 @@ if uploaded_file is not None or load_from_db:
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
-    st.write('Please upload an Excel file to proceed.')
+    st.write('Please upload an Excel file to proceed.') 
 
 # Add footer with rocket emojis and branding
 st.markdown("---")
