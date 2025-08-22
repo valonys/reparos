@@ -547,6 +547,14 @@ if uploaded_file is not None or load_from_db:
                 ax.set_aspect('equal')
                 ax.grid(False)
                 ax.set_facecolor('#E6F3FF')
+                
+                # Remove axes for cleaner visualization
+                ax.set_xticks([])
+                ax.set_yticks([])
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                ax.spines['bottom'].set_visible(False)
+                ax.spines['left'].set_visible(False)
                 if selected_unit == 'CLV':
                     draw_clv(ax, add_chamfered_rectangle, add_rectangle, add_hexagon, add_fwd)
                 elif selected_unit == 'PAZ':
