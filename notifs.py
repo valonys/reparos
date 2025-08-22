@@ -32,6 +32,47 @@ st.markdown("""
         font-size: 1.3rem;
         margin-right: 0.4rem;
     }
+    
+    /* Fix sidebar expander layout */
+    section[data-testid="stSidebar"] [data-testid="stExpander"] {
+        margin-bottom: 1rem;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stExpanderHeader"] {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        line-height: 1.2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stExpander"] [data-testid="stExpanderContent"] {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Ensure proper spacing for sidebar elements */
+    section[data-testid="stSidebar"] .stMarkdown {
+        margin-bottom: 0.5rem;
+    }
+    
+    section[data-testid="stSidebar"] .stButton {
+        margin-top: 0.5rem;
+    }
+    
+    /* Ensure sidebar has proper width */
+    section[data-testid="stSidebar"] {
+        min-width: 300px;
+    }
+    
+    /* Improve expander content readability */
+    section[data-testid="stSidebar"] [data-testid="stExpander"] .stMarkdown {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+    
+    section[data-testid="stSidebar"] [data-testid="stExpander"] .stMarkdown p {
+        margin-bottom: 0.25rem;
+    }
 
     /* Top-right logo placement - responsive to scrolling */
     .logo-container {
@@ -271,7 +312,7 @@ if existing_data is not None:
         st.sidebar.caption(f"🕒 Last updated: {last_update}")
     
     # Show data summary
-    with st.sidebar.expander("📋 Data Summary"):
+    with st.sidebar.expander("Data Summary"):
         if 'FPSO' in existing_data.columns:
             fpsos = existing_data['FPSO'].value_counts()
             st.write("**FPSO Distribution:**")
