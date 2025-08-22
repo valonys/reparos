@@ -308,7 +308,7 @@ if uploaded_file is not None or load_from_db:
                 st.success("📊 Data loaded from database successfully!")
         else:
         # Read the Excel file
-        df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
+            df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
         # Save to DB for persistence
         save_df_to_db(df)
             st.success("✅ New data uploaded and saved to database!")
