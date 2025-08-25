@@ -525,7 +525,7 @@ if uploaded_file is not None or load_from_db:
             df_nc = pd.DataFrame(df_nc)
         
         # Create tabs
-        tab1, tab2, tab3, tab4 = st.tabs(["NI Notifications", "NC Notifications", "Summary Stats", "FPSO Layout"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["NI Notifications", "NC Notifications", "Summary Stats", "FPSO Layout", "🤖 RAG Assistant"])
 
         # NI Notifications Tab
         with tab1:
@@ -886,6 +886,47 @@ if uploaded_file is not None or load_from_db:
             plt.title(f"FPSO Visualization - {selected_fpso}", fontsize=16)
             st.pyplot(fig)
             plt.close(fig)  # Close the figure to free memory
+
+        # RAG Assistant Tab
+        with tab5:
+            st.subheader("🤖 DigiTwin RAG Assistant")
+            st.markdown("Ask me anything about your FPSO notifications data!")
+            
+            # Import and initialize RAG system
+            try:
+                from rag_chatbot import DigiTwinRAG, render_chat_interface
+                
+                # Initialize RAG system
+                if 'rag_system' not in st.session_state:
+                    with st.spinner("Initializing RAG system..."):
+                        st.session_state.rag_system = DigiTwinRAG()
+                
+                # Render chat interface
+                render_chat_interface(st.session_state.rag_system)
+                
+            except ImportError as e:
+                st.error(f"❌ RAG module not available: {e}")
+                st.info("💡 To enable RAG functionality, install the required dependencies:")
+                st.code("pip install -r requirements_rag.txt")
+                
+                # Show sample questions
+                st.markdown("### 💡 Sample Questions You Can Ask:")
+                sample_questions = [
+                    "Which FPSO has the most NI notifications?",
+                    "What are the common keywords in PAZ notifications?",
+                    "Show me all safety-related notifications from last month",
+                    "Compare notification patterns between GIR and DAL",
+                    "What equipment has the most maintenance issues?",
+                    "Which work centers require immediate attention?"
+                ]
+                
+                for question in sample_questions:
+                    st.write(f"• {question}")
+                
+            except Exception as e:
+                st.error(f"❌ Error initializing RAG system: {e}")
+                st.info("Please check your LLM configuration and vector database setup.")
+    
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
