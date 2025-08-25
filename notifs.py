@@ -255,6 +255,10 @@ st.sidebar.title("Upload Notifications Dataset")
 # Add database loading option
 load_from_db = st.sidebar.checkbox("Load from Database", help="Load previously uploaded data from database")
 
+# Add preprocessing option
+enable_preprocessing = st.sidebar.checkbox("Enable Data Preprocessing", value=True, 
+                                         help="Remove unnecessary columns and optimize memory usage")
+
 uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type=["xlsx"])
 
 # Add FPSO selection dropdown in the sidebar
@@ -296,6 +300,69 @@ def get_last_update_time(db_path=DB_PATH):
             return result[0] if result else None
         except Exception:
             return None
+
+# Data Preprocessing Function
+def preprocess_notifications_data(df):
+    """
+    Preprocess notification data to reduce size and improve performance
+    by removing unnecessary columns and optimizing memory usage.
+    """
+    # Store original shape for comparison
+    original_shape = df.shape
+    original_memory = df.memory_usage(deep=True).sum()
+    
+    # Remove unnecessary columns to improve memory footprint
+    columns_to_remove = [
+        'Priority',           # Redundant priority information
+        'Notification',       # Duplicate notification data
+        'Order',             # Order information not needed for analytics
+        'Planner group'       # Planner group metadata
+    ]
+    
+    # Remove specified columns (ignore if they don't exist)
+    df_cleaned = df.drop(columns=columns_to_remove, errors='ignore')
+    
+    # Remove columns with high percentage of null values (>80%)
+    null_percentage = df_cleaned.isnull().sum() / len(df_cleaned) * 100
+    high_null_columns = null_percentage[null_percentage > 80].index.tolist()
+    df_cleaned = df_cleaned.drop(columns=high_null_columns)
+    
+    # Remove duplicate rows
+    df_cleaned = df_cleaned.drop_duplicates()
+    
+    # Optimize data types for memory efficiency
+    for col in df_cleaned.columns:
+        if df_cleaned[col].dtype == 'object':
+            # Convert object columns to category if they have few unique values
+            if df_cleaned[col].nunique() / len(df_cleaned) < 0.5:
+                df_cleaned[col] = df_cleaned[col].astype('category')
+        elif df_cleaned[col].dtype == 'int64':
+            # Downcast integers
+            df_cleaned[col] = pd.to_numeric(df_cleaned[col], downcast='integer')
+        elif df_cleaned[col].dtype == 'float64':
+            # Downcast floats
+            df_cleaned[col] = pd.to_numeric(df_cleaned[col], downcast='float')
+    
+    # Calculate improvements
+    final_shape = df_cleaned.shape
+    final_memory = df_cleaned.memory_usage(deep=True).sum()
+    
+    # Create summary of preprocessing results
+    preprocessing_summary = {
+        'original_rows': original_shape[0],
+        'original_cols': original_shape[1],
+        'final_rows': final_shape[0],
+        'final_cols': final_shape[1],
+        'rows_removed': original_shape[0] - final_shape[0],
+        'cols_removed': original_shape[1] - final_shape[1],
+        'original_memory_mb': original_memory / 1024 / 1024,
+        'final_memory_mb': final_memory / 1024 / 1024,
+        'memory_reduction_mb': (original_memory - final_memory) / 1024 / 1024,
+        'memory_reduction_percent': ((original_memory - final_memory) / original_memory) * 100,
+        'removed_columns': columns_to_remove + high_null_columns
+    }
+    
+    return df_cleaned, preprocessing_summary
 
 # Data Management Section
 st.sidebar.markdown("---")
@@ -350,9 +417,39 @@ if uploaded_file is not None or load_from_db:
         else:
             # Read the Excel file
             df = pd.read_excel(uploaded_file, sheet_name='Global Notifications')
-            # Save to DB for persistence
-            save_df_to_db(df)
-            st.success("✅ New data uploaded and saved to database!")
+            
+            # Apply data preprocessing if enabled
+            if enable_preprocessing:
+                st.info("🔄 Preprocessing data to optimize performance...")
+                df, preprocessing_summary = preprocess_notifications_data(df)
+                
+                # Display preprocessing results
+                with st.expander("📊 Data Preprocessing Summary", expanded=True):
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Rows", f"{preprocessing_summary['final_rows']:,}", 
+                                 f"-{preprocessing_summary['rows_removed']:,}")
+                    with col2:
+                        st.metric("Columns", f"{preprocessing_summary['final_cols']}", 
+                                 f"-{preprocessing_summary['cols_removed']}")
+                    with col3:
+                        st.metric("Memory", f"{preprocessing_summary['final_memory_mb']:.1f} MB", 
+                                 f"-{preprocessing_summary['memory_reduction_mb']:.1f} MB")
+                    
+                    st.write(f"**Memory reduction:** {preprocessing_summary['memory_reduction_percent']:.1f}%")
+                    
+                    if preprocessing_summary['removed_columns']:
+                        st.write("**Removed columns:**")
+                        for col in preprocessing_summary['removed_columns']:
+                            st.write(f"• {col}")
+                
+                # Save preprocessed data to DB for persistence
+                save_df_to_db(df)
+                st.success("✅ Data preprocessed and saved to database!")
+            else:
+                # Save original data to DB for persistence
+                save_df_to_db(df)
+                st.success("✅ Data uploaded and saved to database!")
         
         # Strip whitespace from column names
         df.columns = df.columns.str.strip()
