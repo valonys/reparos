@@ -158,7 +158,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("📊 DigiTwin - The Inspekta Deck")
+st.title("📊 DigiTwin - B17 Notifications")
 
 # --- AVATARS ---
 USER_AVATAR = "https://raw.githubusercontent.com/achilela/vila_fofoka_analysis/9904d9a0d445ab0488cf7395cb863cce7621d897/USER_AVATAR.png"
@@ -266,14 +266,14 @@ def add_fwd(ax, xy, width, height, **kwargs):
     ax.text(0, -1, "FWD", ha='center', va='center', fontsize=7, weight='bold', transform=text_t + ax.transData)
 
 # Sidebar file upload and FPSO selection
-st.sidebar.title("Upload Notifications Dataset")
+st.sidebar.title("Notifications Dataset")
 
 # Add database loading option
 load_from_db = st.sidebar.checkbox("Load from Database", help="Load previously uploaded data from database")
 
 # Add preprocessing option
 enable_preprocessing = st.sidebar.checkbox("Enable Data Preprocessing", value=True, 
-                                         help="Remove unnecessary columns and optimize memory usage")
+                                         help="Preprocessing data columns to optimize memory usage")
 
 uploaded_file = st.sidebar.file_uploader("Choose an Excel file", type=["xlsx"])
 
@@ -541,7 +541,7 @@ if uploaded_file is not None or load_from_db:
             df_nc = pd.DataFrame(df_nc)
         
         # Create tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["NI Notifications", "NC Notifications", "Summary Stats", "FPSO Layout", "🤖 RAG Assistant"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(["NI Notifications", "NC Notifications", "Summary Stats", "FPSO Layout", "Agentic Assistant"])
 
         # NI Notifications Tab
         with tab1:
@@ -905,7 +905,7 @@ if uploaded_file is not None or load_from_db:
 
         # RAG Assistant Tab
         with tab5:
-            st.subheader("🤖 DigiTwin RAG Assistant")
+            st.subheader("DigiTwin Agentic Assistant")
             st.markdown("Ask me anything about your FPSO notifications data!")
             
             # Import and initialize RAG system
