@@ -55,6 +55,11 @@ TABLE_NAME = 'notifications'
 VECTOR_DB_PATH = 'vector_store'
 EMBEDDING_MODEL = 'all-MiniLM-L6-v2'
 
+# --- AVATARS ---
+USER_AVATAR = "https://raw.githubusercontent.com/achilela/vila_fofoka_analysis/9904d9a0d445ab0488cf7395cb863cce7621d897/USER_AVATAR.png"
+BOT_AVATAR = "https://raw.githubusercontent.com/achilela/vila_fofoka_analysis/991f4c6e4e1dc7a8e24876ca5aae5228bcdb4dba/Ataliba_Avatar.jpg"
+
+
 class DigiTwinRAG:
     """
     Comprehensive RAG system for DigiTwin notifications analysis
@@ -466,7 +471,7 @@ def render_chat_interface(rag: DigiTwinRAG):
     
     # Chat header
     st.markdown("### 🤖 DigiTwin RAG Assistant")
-    st.markdown("Ask me anything about your FPSO notifications data!")
+    st.markdown("Ask me anything about your B17 notifications data!")
     
     # Display chat messages
     for message in st.session_state.messages:
@@ -479,15 +484,17 @@ def render_chat_interface(rag: DigiTwinRAG):
         st.session_state.messages.append({
             "role": "user", 
             "content": prompt,
-            "avatar": "👤"
+            "avatar": USER_AVATAR
         })
         
         # Display user message
-        with st.chat_message("user", avatar="👤"):
+        
+        
+        with st.chat_message("user", avatar=USER_AVATAR):
             st.markdown(prompt)
         
         # Generate and display assistant response
-        with st.chat_message("assistant", avatar="🤖"):
+        with st.chat_message("assistant", avatar=BOT_AVATAR):
             message_placeholder = st.empty()
             
             try:
@@ -503,7 +510,7 @@ def render_chat_interface(rag: DigiTwinRAG):
                 st.session_state.messages.append({
                     "role": "assistant",
                     "content": full_response,
-                    "avatar": "🤖"
+                    "avatar": BOT_AVATAR
                 })
                 
             except Exception as e:
