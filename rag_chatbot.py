@@ -341,7 +341,7 @@ class DigiTwinRAG:
                     return self._stream_ollama_response(prompt, max_tokens, temperature)
                 else:
                     response = self.llm_client['ollama'].chat(
-                        model='llama3.2',
+                        model='llama3.1:latest',
                         messages=[{'role': 'user', 'content': prompt}]
                     )
                     return response['message']['content']
@@ -377,7 +377,7 @@ class DigiTwinRAG:
         """Stream response from Ollama"""
         try:
             response = self.llm_client['ollama'].chat(
-                model='llama3.2',
+                model='llama3.1:latest',
                 messages=[{'role': 'user', 'content': prompt}],
                 stream=True
             )
