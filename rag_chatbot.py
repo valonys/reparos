@@ -151,7 +151,7 @@ class DigiTwinRAG:
                 'content': f"""
                 FPSO: {row.get('FPSO', 'N/A')}
                 Notification Type: {row.get('Notifictn type', 'N/A')} 
-                {'(Notification of Integrity)' if row.get('Notifictn type') == 'NI' else '(Notification of Conformity)' if row.get('Notifictn type') == 'NC' else ''}
+                {'(Notification of Integrity)' if row.get('Notifictn type') == 'NI' else '(Notification of Non-Conformity)' if row.get('Notifictn type') == 'NC' else ''}
                 Description: {row.get('Description', 'N/A')}
                 Created: {row.get('Created on', 'N/A')}
                 Keywords: {row.get('Extracted_Keywords', 'N/A')}
@@ -224,7 +224,7 @@ class DigiTwinRAG:
                 # Weaviate semantic search
                 try:
                     semantic_results = self.vector_store.query.get("Notification", [
-                        "fpso", "notification_type", "created_date", "keywords", "modules", "racks"
+                        "fpso", "notification_type", "created_date", "keywords", "modules", "racks", "tbr"
                     ]).with_near_vector({
                         "vector": query_embedding[0].tolist()
                     }).with_limit(k).do()
@@ -281,7 +281,7 @@ class DigiTwinRAG:
         """Rewrite query for better retrieval"""
         rewrite_prompt = f"""
         Rewrite the following query to be more specific and searchable for FPSO notifications data.
-        Focus on technical terms, FPSO names (GIR, DAL, PAZ, CLV), notification types (NI/NC), and equipment.
+        Focus on technical terms, FPSO names (GIR, DAL, PAZ, CLV), notification types (NI/NC), and type TBR, COA.
         
         Original query: {query}
         
@@ -413,9 +413,11 @@ class DigiTwinRAG:
         {pivot_analysis}
         
         **Important Definitions:**
-        - NI = Notification of Integrity (maintenance and safety notifications)
-        - NC = Notification of Conformity (compliance and regulatory notifications)
+        - NI = Notification of Integrity (a probable leak or loss of pressure containment LoPC)
+        - NC = Notification of Non-Conformity (an anomaly detected that requires some remediation to avoid escalating to an NI. Usually coating/painting required)
         - FPSO Units: GIR, DAL, PAZ, CLV
+        - NI Types = TBR1, TBR2, TBR3, TBRG
+        - NC Types = COA, ICOA, CUS
         
         **User Query:** {query}
         
