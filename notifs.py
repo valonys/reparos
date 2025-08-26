@@ -81,6 +81,9 @@ st.markdown("""
         right: 2rem;
         z-index: 1000;
         transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     
     /* Adjust logo position when scrolling */
@@ -99,6 +102,7 @@ st.markdown("""
     /* Smooth transitions for logo */
     .logo-container img {
         transition: all 0.3s ease;
+        border-radius: 5px;
     }
     
     /* Logo hover effect */
@@ -109,14 +113,26 @@ st.markdown("""
     .logo-container.scrolled:hover {
         transform: scale(0.85);
     }
+    
+    /* Individual logo styling */
+    .logo-container img:first-child {
+        width: 60px;
+        height: auto;
+    }
+    
+    .logo-container img:last-child {
+        width: 50px;
+        height: auto;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# Display logo (responsive to scrolling)
+# Display logos (responsive to scrolling)
 st.markdown(
     """
     <div class="logo-container" id="logo-container">
-        <img src="https://github.com/valonys/DigiTwin/blob/29dd50da95bec35a5abdca4bdda1967f0e5efff6/ValonyLabs_Logo.png?raw=true" width="70">
+        <img src="https://github.com/valonys/DigiTwin/blob/29dd50da95bec35a5abdca4bdda1967f0e5efff6/ValonyLabs_Logo.png?raw=true" alt="ValonyLabs Logo">
+        <img src="https://raw.githubusercontent.com/valonys/reparos/de012e645fd86ee84be26642befea032c3adf39c/telogo.png" alt="TE Logo">
     </div>
     
     <script>
