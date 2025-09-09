@@ -359,7 +359,7 @@ class DigiTwinRAG:
         """Stream response from Groq"""
         try:
             response = self.llm_client['groq'].chat.completions.create(
-                model="llama3-8b-8192",
+                model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=max_tokens,
                 temperature=temperature,
