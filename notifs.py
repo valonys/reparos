@@ -395,7 +395,7 @@ if existing_data is not None:
         st.sidebar.caption(f"🕒 Last updated: {last_update}")
     
     # Show data summary
-    with st.sidebar.expander("Data Summary"):
+    with st.sidebar.expander(" "):
         if 'FPSO' in existing_data.columns:
             fpsos = existing_data['FPSO'].value_counts()
             st.write("**FPSO Distribution:**")
