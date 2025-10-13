@@ -473,7 +473,7 @@ if uploaded_file is not None or load_from_db:
         # Define expected columns with corrected spelling
         expected_columns = {
             'Notifictn type': 'Notifictn type',  # Corrected spelling
-            'Created On': 'Created On',          # Corrected spelling
+            'Created on': 'Created on',          # Corrected spelling
             'Description': 'Description',
             'FPSO': 'FPSO'
         }
