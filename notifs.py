@@ -571,11 +571,11 @@ if uploaded_file is not None or load_from_db:
         with tab3:
             st.subheader("2025 Raised")
             # Filter for notifications in 2025
-            created_on_series = pd.to_datetime(df['Created On'])
+            created_on_series = pd.to_datetime(df['Created on'])
             df_2025 = df[created_on_series.dt.year == 2025].copy()
             if not df_2025.empty:
                 # Add 'Month' column for monthly analysis
-                df_2025['Month'] = pd.to_datetime(df_2025['Created On']).dt.strftime('%b')
+                df_2025['Month'] = pd.to_datetime(df_2025['Created on']).dt.strftime('%b')
                 months_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                 df_2025['Month'] = pd.Categorical(df_2025['Month'], categories=months_order, ordered=True)
                 # Group by FPSO, Month, and Notification Type
