@@ -131,7 +131,6 @@ st.markdown("""
 st.markdown(
     """
     <div class="logo-container" id="logo-container">
-        <img src="https://github.com/valonys/DigiTwin/blob/29dd50da95bec35a5abdca4bdda1967f0e5efff6/ValonyLabs_Logo.png?raw=true" alt="ValonyLabs Logo">
         <img src="https://github.com/valonys/DigiTwin/blob/dd3bb2fd97099e97bb633d1445043d0ec5f122ac/telogo.png?raw=true" alt="TE Logo">
     </div>
     
